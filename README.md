@@ -119,6 +119,7 @@ Here is what every option means:
 | `switch_on_action`| `object`  | Optional     | Custom action to turn on purifier.               |
 |`switch_off_action`| `object`  | Optional     | Custom action to turn off purifier.              |
 | `background`      | `boolean` | `true`       | Show primary color as background.                |
+| `name`            | `string`  | Optional     | Custom display name.                             |
 
 ### `aqi` object
 
