@@ -23,10 +23,13 @@ export default css`
   }
 
   .preview {
-    background-color: var(--primary-color);
     cursor: pointer;
     overflow: hidden;
     position: relative;
+  }
+  
+  .preview.with-background {
+    background-color: var(--primary-color);
   }
 
   .header {

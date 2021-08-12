@@ -44,7 +44,32 @@ class PurifierCard extends LitElement {
   get entity() {
     return this.hass.states[this.config.entity];
   }
-  
+
+  get running() {
+    const { switch: _switch = {} } = this.config;
+    const { entity_id, attribute, value_on = 'on', value_off = '' } = _switch;
+    const entity = entity_id ? this.hass.states[entity_id] : this.entity;
+    const value = attribute ? entity.attributes[attribute] : entity.state;
+
+    if (value_on && !value_off) {
+      return value === value_on;
+    }
+
+    if (value_off && !value_on) {
+      return value !== value_off;
+    }
+
+    if (value === value_on) {
+      return true;
+    }
+
+    if (value === value_off) {
+      return false;
+    }
+
+    return false;
+  }
+
   get showSpeed() {
     if (this.config.show_speed === undefined) {
       return false;
@@ -52,7 +77,7 @@ class PurifierCard extends LitElement {
 
     return this.config.show_speed;
   }
-  
+
   get showPresetMode() {
     if (this.config.show_preset_mode === undefined) {
       return true;
@@ -60,7 +85,7 @@ class PurifierCard extends LitElement {
 
     return this.config.show_preset_mode;
   }
-  
+
   get showName() {
     if (this.config.show_name === undefined) {
       return true;
@@ -91,6 +116,14 @@ class PurifierCard extends LitElement {
     }
 
     return this.config.compact_view;
+  }
+
+  get withBackground() {
+    if (this.config.background === undefined) {
+      return true;
+    }
+
+    return this.config.background;
   }
 
   setConfig(config) {
@@ -155,13 +188,29 @@ class PurifierCard extends LitElement {
     }
   }
 
+  switchOn() {
+    const { switch_on_action = {} } = this.config;
+    const { service = 'fan.turn_on', service_data = {} } = switch_on_action;
+    this.callService(service, service_data);
+  }
+
+  switchOff() {
+    const { switch_off_action = {} } = this.config;
+    const { service = 'fan.turn_off', service_data = {} } = switch_off_action;
+    this.callService(service, service_data);
+  }
+
+  toggleSwitch() {
+    this.running ? this.switchOff() : this.switchOn();
+  }
+
   renderSpeed() {
     const {
       attributes: { speed, speed_list, supported_features },
     } = this.entity;
 
     // TODO handle percentages
-    if (!this.showSpeed() || !speed_list || !(supported_features & SUPPORT_SET_SPEED)) {
+    if (!this.showSpeed || !speed_list || !(supported_features & SUPPORT_SET_SPEED)) {
       return html``;
     }
 
@@ -203,7 +252,7 @@ class PurifierCard extends LitElement {
       attributes: { preset_mode, preset_modes, supported_features },
     } = this.entity;
 
-    if (!this.showPresetMode() || !preset_modes || !(supported_features & SUPPORT_PRESET_MODE)) {
+    if (!this.showPresetMode || !preset_modes || !(supported_features & SUPPORT_PRESET_MODE)) {
       return html``;
     }
 
@@ -275,7 +324,9 @@ class PurifierCard extends LitElement {
       return html``;
     }
 
-    return html` <div class="friendly-name">${friendly_name}</div> `;
+    const display_name = this.config.name || friendly_name;
+
+    return html` <div class="friendly-name">${display_name}</div> `;
   }
 
   renderState() {
@@ -325,7 +376,7 @@ class PurifierCard extends LitElement {
 
   renderToolbar() {
     const { actions = [] } = this.config;
-    const { state, attributes } = this.entity;
+    const { attributes } = this.entity;
 
     if (!this.showToolbar) {
       return html``;
@@ -393,9 +444,9 @@ class PurifierCard extends LitElement {
       <div class="toolbar">
         <ha-icon-button
           icon="hass:power"
-          class="${state === 'on' ? 'active' : ''}"
+          class="${this.running ? 'active' : ''}"
           title="${localize('common.toggle_power')}"
-          @click="${() => this.callService('fan.toggle')}"
+          @click="${() => this.toggleSwitch()}"
         >
         </ha-icon-button>
 
@@ -421,15 +472,13 @@ class PurifierCard extends LitElement {
       `;
     }
 
-    const { state } = this.entity;
-
-    const stateClass = state === 'on' ? 'working' : 'standby';
+    const stateClass = this.running ? 'working' : 'standby';
     const className = !this.compactView ? stateClass : 'compact';
 
     return html`
       <ha-card>
         <div
-          class="preview"
+          class="preview ${this.withBackground ? 'with-background' : ''}"
           @click="${() => this.handleMore()}"
           ?more-info="true"
         >

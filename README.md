@@ -115,6 +115,10 @@ Here is what every option means:
 | `aqi`             | `object`  | Optional     | Custom entity or attribute for AQI value.        |
 | `stats`           | `object`  | Optional     | Custom per state stats for your purifier cleaner |
 | `actions`         | `object`  | Optional     | Custom actions for your purifier cleaner.        |
+| `switch`          | `object`  | Optional     | Custom switch to determine the state of purifier.|
+| `switch_on_action`| `object`  | Optional     | Custom action to turn on purifier.               |
+|`switch_off_action`| `object`  | Optional     | Custom action to turn off purifier.              |
+| `background`      | `boolean` | `true`       | Show primary color as background.                |
 
 ### `aqi` object
 
@@ -153,6 +157,22 @@ The card will automatically try to figure out which one of actions is currently 
 1. It's a service.
 2. `entity`'s `speed` attribute is equal to `action`'s `speed`.
 3. `entity`'s `speed` attribute and `favorite_level` is equal to `action`'s `speed` and `xiaomi_miio_favorite_level` correspondingly.
+
+### `switch` object
+
+| Name        |   Type   | Default  | Description                                         |
+| ----------- | :------: | -------- | --------------------------------------------------- |
+| `entity_id` | `string` | Optional | An entity_id with state, i.e. `switch.purifier`.    |
+| `attribute` | `string` | Optional | An attribute get switch state.                      |
+| `value_on`  | `any`    | Optional | State/Attribute value if purifier is on.            |
+| `value_off` | `any`    | Optional | State/Attribute value if purifier is off.           |
+
+### `switch_on_action` and `switch_off_action` object
+
+| Name              |   Type   | Default  | Description                                  |
+| ----------------- | :------: | -------- | -------------------------------------------- |
+| `service`         | `string` | Optional | A service to call, i.e. `script.turn_on`.    |
+| `service_data`    | `object` | Optional | `service_data` for `service` call            |
 
 ## Animations
 
